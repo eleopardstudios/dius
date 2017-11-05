@@ -1,111 +1,75 @@
 'use strict';
-//Match class to represent a single match played
-var Match = function (p1, p2) {
-    this.points = [0, 15, 30, 40];
-    this.totalPointsWon = 0;
-    this.p1 = {
-        name: p1,
-        pointsWon: 0,
-        gamesWon: 0,
-        advantage: false
+//This class represent a single player
+class Player {   
+    constructor(game= null, name = '', pointsWon = 0, gamesWon = 0) {
+        this.game = game;
+        this.name = name;
+        this.pointsWon = pointsWon;
+        this.gamesWon = gamesWon;        
     }
-    this.p2 = {
-        name: p2,
-        pointsWon: 0,
-        gamesWon: 0,
-        advantage: false
-    }
-    this.tiebreaker = false;
-    this.deuce = false;
-    this.winner = null;
-};
-
-//function to update set status
-Match.prototype.updateSetStatus = function () {
-    if (this.tiebreaker) {
-        if (this.p1.pointsWon > 6 && this.p1.pointsWon - this.p2.pointsWon > 1) {
-            this.winner = this.p1;
-            this.tiebreaker = false;
-        } else if (this.p2.pointsWon > 6 && this.p2.pointsWon - this.p1.pointsWon > 1) {
-            this.winner = this.p2;
-            this.tiebreaker = false;
-        }
-        return;
-    }
-    if (this.p1.gamesWon > 5 && this.p1.gamesWon - this.p2.gamesWon > 1) {
-        this.winner = this.p1;
-    } else if (this.p2.gamesWon > 5 && this.p2.gamesWon - this.p1.gamesWon > 1) {
-        this.winner = this.p2;
-    } else if (this.p1.gamesWon == 6 && this.p1.gamesWon == this.p2.gamesWon) {
-        this.tiebreaker = true;
-    }
-};
-
-//Function to update game status
-Match.prototype.updateGameStatus = function () {
-    this.deuce = false;
-    this.p1.advantage = false;
-    this.p2.advantage = false;
-    if (this.tiebreaker) {
-        this.updateSetStatus();
-        return;
-    }
-    if (this.p1.pointsWon - this.p2.pointsWon > 1 && this.p1.pointsWon > 3) {
-        this.p1.gamesWon++;
-        this.p1.pointsWon = 0;
-        this.p2.pointsWon = 0;
-        this.totalPointsWon = 0;
-        this.updateSetStatus();
-    } else if (this.p2.pointsWon - this.p1.pointsWon > 1 && this.p2.pointsWon > 3) {
-        this.p2.gamesWon++;
-        this.p2.pointsWon = 0;
-        this.p1.pointsWon = 0;
-        this.totalPointsWon = 0;
-        this.updateSetStatus();
-    } else if (this.totalPointsWon >= 6) {
-        if (this.p1.pointsWon == this.p2.pointsWon) {
-            this.deuce = true;
-        } else if (this.p1.pointsWon > this.p2.pointsWon) {
-            this.p1.advantage = true;
-        } else if (this.p2.pointsWon > this.p1.pointsWon) {
-            this.p2.advantage = true;
+    wonPoint(oponent) {
+        this.pointsWon++;
+        this.game.lastPointWinner = this;          
+        if(this.game.tiebreaker) {
+            this.isWinner(oponent);
+            return;
+        }                        
+        if ( this.pointsWon > 3 && this.pointsWon - oponent.pointsWon > 1) {            
+            this.wonGame(oponent);
+        } else if( this.game.totalPointsWon >= 6) {            
+            this.game.advantageTo = !(this.game.deuce = (this.pointsWon == oponent.pointsWon)) && this;            
         }
     }
-};
-
-//Function to update points of a player
-Match.prototype.pointWonBy = function (player) {
-    this.totalPointsWon++;
-    if (player == this.p1.name) {
-        this.p1.pointsWon++;
-    } else {
-        this.p2.pointsWon++;
+    wonGame(oponent) {
+        this.gamesWon++;
+        this.pointsWon = oponent.pointsWon = this.game.totalPointsWon = 0;
+        this.game.advantageTo = null;
+        this.isWinner(oponent);
     }
-    this.updateGameStatus();
-};
-
-//Function to display score
-Match.prototype.score = function () {
-    if (this.winner) {
-        console.log("Winner " + this.winner.name);
-        return;
-    }
-    var gameScore = this.p1.gamesWon + '-' + this.p2.gamesWon;
-    var pointScore = '';
-    if (this.tiebreaker) {
-        pointScore = this.p1.pointsWon + '-' + this.p2.pointsWon;
-    } else {
-        if (this.deuce) {
-            pointScore = 'Deuce';
-        } else if (this.p1.advantage) {
-            pointScore = 'Advantage Player 1';
-        } else if (this.p2.advantage) {
-            pointScore = 'Advantage Player 2';
+    isWinner(oponent) {
+        if((this.game.tiebreaker && (this.pointsWon > 6 && this.pointsWon - oponent.pointsWon > 1)) ||
+            (this.gamesWon > 5 && this.gamesWon - oponent.gamesWon > 1) ) {
+            this.game.winner = this;                                     
         } else {
-            pointScore = this.points[this.p1.pointsWon] + '-' + this.points[this.p2.pointsWon];
+            this.game.tiebreaker = (this.gamesWon == 6 && this.gamesWon == oponent.gamesWon);
         }
     }
-    console.log(gameScore + ", " + pointScore);
-};
-
+}
+//Match class to represent a single match played
+class Match {
+    constructor(p1, p2) {
+        this.p1 = new Player(this, p1);
+        this.p2 = new Player(this, p2);
+        this.lastPointWinner = null;
+        this.advantageTo = null;
+        this.points = [0, 15, 30, 40];
+        this.totalPointsWon = 0;
+        this.tiebreaker = false;
+        this.deuce = false;
+        this.winner = null;
+    }
+    pointWonBy(player) {
+        if(this.winner){return;}
+        this.totalPointsWon++;         
+        (player == this.p1.name) ? this.p1.wonPoint(this.p2) : this.p2.wonPoint(this.p1);
+    }
+    score() {
+        if (this.winner) {
+            console.log( `Winner ${this.winner.name}`);
+            return;
+        }
+        var gameScore = `${this.p1.gamesWon} - ${this.p2.gamesWon}`;
+        var pointScore = '';
+        if (this.tiebreaker) {
+            pointScore = `${this.p1.pointsWon} - ${this.p2.pointsWon}`;
+        } else if (this.deuce) {
+            pointScore = 'Deuce';
+        } else if (this.advantageTo) {
+            pointScore = `Advantage ${this.advantageTo.name}`;
+        } else {
+            pointScore = `${this.points[this.p1.pointsWon]} - ${this.points[this.p2.pointsWon]}`;
+        }        
+        console.log(`${gameScore}, ${pointScore}`);
+    }
+}
 module.exports = Match;
