@@ -1,0 +1,23 @@
+{
+  "name": "dius",
+  "version": "1.0.0",
+  "description": "test project",
+  "main": "match.js",
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "^4.0.1"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eleopardstudios/dius.git"
+  },
+  "author": "shobhit agrawal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eleopardstudios/dius/issues"
+  },
+  "homepage": "https://github.com/eleopardstudios/dius#readme"
+}

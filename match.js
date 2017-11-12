@@ -55,21 +55,20 @@ class Match {
     }
     score() {
         if (this.winner) {
-            console.log( `Winner ${this.winner.name}`);
-            return;
+            return `Winner ${this.winner.name}`;
         }
-        var gameScore = `${this.p1.gamesWon} - ${this.p2.gamesWon}`;
+        var gameScore = `${this.p1.gamesWon}-${this.p2.gamesWon}`;
         var pointScore = '';
         if (this.tiebreaker) {
-            pointScore = `${this.p1.pointsWon} - ${this.p2.pointsWon}`;
+            pointScore = `${this.p1.pointsWon}-${this.p2.pointsWon}`;
         } else if (this.deuce) {
             pointScore = 'Deuce';
         } else if (this.advantageTo) {
             pointScore = `Advantage ${this.advantageTo.name}`;
         } else {
-            pointScore = `${this.points[this.p1.pointsWon]} - ${this.points[this.p2.pointsWon]}`;
+            pointScore = `${this.points[this.p1.pointsWon]}-${this.points[this.p2.pointsWon]}`;
         }        
-        console.log(`${gameScore}, ${pointScore}`);
+        return `${gameScore}, ${pointScore}`;
     }
 }
 module.exports = Match;
